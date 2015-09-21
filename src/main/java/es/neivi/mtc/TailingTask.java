@@ -162,6 +162,7 @@ public class TailingTask implements Runnable, Service {
 				// hasNext throws IllegalStateException when cursor is closed
 				// (not by documentHandler)
 				MongoCursor<Document> cursor = buildCursor();
+				// "Await" for data
 				if (cursor.hasNext()) {
 
 					// throws ChangedStateToNotStarted
@@ -218,9 +219,9 @@ public class TailingTask implements Runnable, Service {
 				Document next = cursor.tryNext();
 
 				if (next == null) {
-
+					
+					// No doc to be processed ...
 					// It is likely we come from a burst of processing ...
-
 					// This is a chance to persist last processed
 					// id...go for it
 
