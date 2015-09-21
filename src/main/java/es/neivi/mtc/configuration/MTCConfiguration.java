@@ -109,8 +109,9 @@ public class MTCConfiguration {
 	}
 
 	public boolean isPersistentTrackingEnable() {
-		return (persistentTrackingConfiguration != null && StringUtils
-				.hasText(persistentTrackingConfiguration.getConsumerId()));
+		return (persistentTrackingConfiguration != null
+				&& (persistentTrackingConfiguration != null) && (!persistentTrackingConfiguration
+				.getConsumerId().isEmpty()));
 	}
 
 	public void isValid() {
@@ -121,5 +122,12 @@ public class MTCConfiguration {
 			String m = "Invalid MTCConfiguration. Please check your URI. Remember you need MongoClient instance, and if persistent tracking configuration enable you need to specify a nonempty consumer task id";
 			throw new InvalidMTCConfiguration(m);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "MTCConfiguration [database=" + database + ", collection="
+				+ collection + ", persistentTrackingConfiguration="
+				+ persistentTrackingConfiguration + "]";
 	}
 }

@@ -35,4 +35,10 @@ public class MTCPersistentTrackingConfiguration {
 	public void setCursorRegenerationDelay(long cursorRegenerationDelay) {
 		this.cursorRegenerationDelay = cursorRegenerationDelay;
 	}
+
+	@Override
+	public String toString() {
+		return "MTCPersistentTrackingConfiguration [consumerId=" + consumerId
+				+ ", cursorRegenerationDelay=" + cursorRegenerationDelay + "]";
+	}
 }
