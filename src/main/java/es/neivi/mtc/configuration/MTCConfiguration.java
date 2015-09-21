@@ -109,7 +109,8 @@ public class MTCConfiguration {
 	}
 
 	public boolean isPersistentTrackingEnable() {
-		return (persistentTrackingConfiguration != null);
+		return (persistentTrackingConfiguration != null && StringUtils
+				.hasText(persistentTrackingConfiguration.getConsumerId()));
 	}
 
 	public void isValid() {

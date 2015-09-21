@@ -77,6 +77,7 @@ public class TailingTask implements Runnable, Service {
 
 		// Check configuration is VALID
 		configuration.isValid();
+		LOG.debug("MTCConfiguration: VALID\n{}", configuration.toString());
 
 		this.configuration = configuration;
 
@@ -94,10 +95,14 @@ public class TailingTask implements Runnable, Service {
 					"Tailable cursors are only compatible with capped collections, and collection "
 							+ collectionName + " is not capped.");
 		}
+		
+		// Is Capped.
+		LOG.debug("Collection {} is CAPPED as expected", collectionName);
 
 		// Persistent TRACKING ENABLED? If enabled tracker != null &&
 		// cursorRegenerationDelay != 0
 		if (configuration.isPersistentTrackingEnable()) {
+			LOG.debug("Persistent tracking is ENABLED");
 			tracker = new PersistentTrackingManager(configuration);
 			cursorRegenerationDelay = getConfiguration()
 					.getPersistentTrackingConfiguration()
