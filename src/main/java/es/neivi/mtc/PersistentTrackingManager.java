@@ -1,19 +1,3 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package es.neivi.mtc;
 
 import org.bson.Document;
@@ -30,9 +14,13 @@ import es.neivi.mtc.configuration.MTCConfiguration;
 import es.neivi.mtc.configuration.MTCPersistentTrackingConfiguration;
 
 /**
- * Responsible of persistent the id of the last tracked event and fetching the
- * last tracked event id from the db.
- *
+ * In charg of tracking database which holds the information needed to be able
+ * to start consuming again from an specified document. This instance persists
+ * the id of the last tracked event for a given consumer and fetches the last
+ * tracked event id from the db.
+ * 
+ * Tracker database has {_id | consumer-task-id | last-tracked_id} and has a
+ * single field index {consumer-task-id: 1}
  */
 public class PersistentTrackingManager {
 
@@ -65,16 +53,16 @@ public class PersistentTrackingManager {
 			if (key.containsKey(MTCPersistentTrackingConfiguration.CONSUMER_ID_FIELD)) {
 				indexExist = true;
 				break;
-			}
+			}	
 			// LOG.debug("Index: {}", index);
 		}
+		
 		if (!indexExist) {
 
 			// Option 1: BUILD INDEX
 			IndexOptions indexOptions = new IndexOptions().unique(true);
 			Document index = new Document(
-					MTCPersistentTrackingConfiguration.CONSUMER_ID_FIELD,
-					1);
+					MTCPersistentTrackingConfiguration.CONSUMER_ID_FIELD, 1);
 			this.trackerCollection.createIndex(index, indexOptions);
 			LOG.info("+ MONGOESB - Index built: {}",
 					MTCPersistentTrackingConfiguration.CONSUMER_ID_FIELD);
@@ -85,7 +73,7 @@ public class PersistentTrackingManager {
 			// MongoESBPersistentTrackingConfiguration.TAILTRACKING_COLLECTION_NAME,
 			// MongoESBPersistentTrackingConfiguration.CONSUMER_ID_FIELD);
 			// LOG.error(m);
-			// throw new CamelMongoESBException(m);
+			// throw new MTCException(m);
 		}
 
 	}
@@ -125,12 +113,11 @@ public class PersistentTrackingManager {
 
 		// Throws RTE: MongoException, MongoWriteException,
 		// MongoWriteConcernException
-		
+
 		trackerCollection.updateOne(filter, update,
 				new UpdateOptions().upsert(true));
-		
-		LOG.debug(
-				"\n+ MongoESB - Last Event ID persisted: {}.\n",
+
+		LOG.debug("\n+ MongoESB - Last Event ID persisted: {}.\n",
 				processedEventId);
 	}
 

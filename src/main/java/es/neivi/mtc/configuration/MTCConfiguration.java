@@ -3,7 +3,7 @@ package es.neivi.mtc.configuration;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
-import es.neivi.mtc.exceptions.MTCException;
+import es.neivi.mtc.exceptions.InvalidMTCConfiguration;
 
 /**
  * Represents a set of configuration values for a MongoESBEndpoint. Contains all
@@ -22,7 +22,7 @@ public class MTCConfiguration {
 	 * the system whether one is not provided
 	 */
 	public static final String DEFAULT_EVENTS_COLLECTION_NAME = "events";
-	
+
 	private MongoClient mongoClient;
 
 	/**
@@ -42,7 +42,7 @@ public class MTCConfiguration {
 	 * published by the systemm. This collections is a capped collection. s
 	 */
 	private String collection;
-	
+
 	/**
 	 * Eventually, contains the data needed in order to implement a persistent
 	 * tracking system. If this value is null, there is no tracking information
@@ -50,7 +50,6 @@ public class MTCConfiguration {
 	 */
 	private MTCPersistentTrackingConfiguration persistentTrackingConfiguration;
 
-	
 	private MongoDatabase mongoDatabase;
 
 	public MongoClient getMongoClient() {
@@ -118,8 +117,8 @@ public class MTCConfiguration {
 				|| (persistentTrackingConfiguration != null && (persistentTrackingConfiguration
 						.getConsumerId() == null || persistentTrackingConfiguration
 						.getConsumerId().isEmpty()))) {
-			String m = "Invalid MongoESBConfiguration. Please check your URI. Remember you need MongoClient instance in Camel Registry, and if persistent tracking configuration enable you a nonempty consumer task id";
-			throw new MTCException(m);
+			String m = "Invalid MTCConfiguration. Please check your URI. Remember you need MongoClient instance, and if persistent tracking configuration enable you need to specify a nonempty consumer task id";
+			throw new InvalidMTCConfiguration(m);
 		}
 	}
 }

@@ -43,9 +43,9 @@ import es.neivi.mtc.exceptions.MTCExecutionException;
 import es.neivi.mtc.exceptions.NotStartedException;
 
 /**
- * Task responsible for fetching the events from the events (capped) collection.
+ * Task responsible for fetching the documents from the (capped) collection.
  */
-public class TailingTask implements Runnable {
+public class TailingTask implements Runnable, Service {
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(TailingTask.class);
@@ -55,12 +55,12 @@ public class TailingTask implements Runnable {
 	private ServiceStatus status = ServiceStatus.STOPPED;
 
 	/**
-	 * Collection storing events being published by systems interacting. Should
-	 * be capped, have a size, max.
+	 * Collection storing documents being published by systems interacting.
+	 * Should be capped, have a size, max.
 	 */
 	// TODO: WiredTIGER StorageEngine(Concurrent Writes-READS). No
 	// compression(capped, size is fixed)
-	private MongoCollection<Document> eventsCollection;
+	private MongoCollection<Document> cappedCollection;
 
 	/*
 	 * PERSISTENT TRACKER.
@@ -75,12 +75,16 @@ public class TailingTask implements Runnable {
 
 	public TailingTask(MTCConfiguration configuration) {
 
+		// Check configuration is VALID
+		configuration.isValid();
+
 		this.configuration = configuration;
+
 		MongoDatabase mongoDatabase = configuration.getMongoDatabase();
 		String collectionName = configuration.getCollection();
-		eventsCollection = mongoDatabase.getCollection(collectionName);
+		cappedCollection = mongoDatabase.getCollection(collectionName);
 
-		// Check eventsCollection is a capped collection...
+		// Check cappedCollection is a capped collection...
 		final Document collStatsCommand = new Document("collStats",
 				collectionName);
 		Boolean isCapped = mongoDatabase.runCommand(collStatsCommand,
@@ -105,20 +109,20 @@ public class TailingTask implements Runnable {
 	}
 
 	/**
-	 * Builds a tailable & awaitdata cursor to fetch events from the events
-	 * collection.
+	 * Builds a tailable & awaitdata cursor to fetch documents from the
+	 * documents collection.
 	 */
 	public MongoCursor<Document> buildCursor() {
 
 		if (lastTrackedId == null) {
-			return eventsCollection.find().sort(new Document("$natural", 1))
+			return cappedCollection.find().sort(new Document("$natural", 1))
 					.cursorType(CursorType.TailableAwait).iterator();
 		} else {
 
-			// we know we processed the event with "_id": lastTrackedId
-			// We are interested in the first event with id greater than
+			// we know we processed the document with "_id": lastTrackedId
+			// We are interested in the first document with id greater than
 			// lastTrackedId
-			return eventsCollection
+			return cappedCollection
 
 			.find(Filters.gt("_id", lastTrackedId))
 
@@ -183,14 +187,6 @@ public class TailingTask implements Runnable {
 		} catch (NotStartedException e) {
 			// Consumer changed its state
 			LOG.info("+ MONGOESB: Consumer changed its state");
-			// STOP or Suspend
-
-			// } catch (MongoException e) {
-			// LOG.info("+ MONGOESB: MongoException - STOP EXECUTION - {}",
-			// e.toString());
-			// throw new CamelMongoMBException(e);
-			// } catch (RuntimeException e) {
-			// throw new CamelMongoMBException(e);
 		} finally {
 			LOG.info("+ MONGOESB - STOP TAILING TASK");
 		}
@@ -198,17 +194,15 @@ public class TailingTask implements Runnable {
 	} // run
 
 	/**
-	 * Cursor LOGIC. A cursor is built and can be iterated until lost or until
-	 * documentHandler changes its state to a not started state. throws
-	 * CamelMongoMBConsumerNotStarted to sign a change in documentHandler
-	 * states.
+	 * Cursor LOGIC. A built cursor can be iterated until lost or until the
+	 * state is changed to a no started state.
 	 * 
 	 * @throws NotStartedException
-	 *             to signal documentHandler state changed from started
+	 *             to signal state changed to a non started state
 	 */
 	private void iterateCursor(final MongoCursor<Document> cursor) {
 
-		// stores the id of the last event fetched by this cursor...
+		// stores the id of the last document fetched by THIS cursor...
 		ObjectId lastProcessedId = null;
 
 		try {
@@ -231,7 +225,7 @@ public class TailingTask implements Runnable {
 						lastTrackedId = lastProcessedId;
 					}
 
-					// Wait for a new event to be processed
+					// Wait for a new document to be processed
 					if (!cursor.hasNext()) {
 						LOG.debug("INNER has NEXT returned no data");
 						if (cursor != null)
@@ -240,12 +234,14 @@ public class TailingTask implements Runnable {
 
 				} else {
 
-					// There is an event to be processed
-
+					// There is a document to be processed
 					try {
+
 						documentHandler.handleDocument(next);
 						lastProcessedId = next.getObjectId("_id");
 					} catch (Exception e) {
+						LOG.error("DocumentHandler raised an exception", e);
+						// Notifiy but keep going
 					}
 				}
 
@@ -258,7 +254,7 @@ public class TailingTask implements Runnable {
 		} catch (MongoSocketException e) {
 			// The cursor was closed
 			LOG.error("\n\nMONGOESB - NETWORK problems: Server Address: {}", e
-					.getServerAddress().toString());
+					.getServerAddress().toString(), e);
 
 			// Not recoverable. Do not regenerate the cursor
 			throw new MTCException(String.format(
@@ -268,12 +264,12 @@ public class TailingTask implements Runnable {
 			// MongoCursorNotFoundException
 			// The cursor was closed
 			// Recoverable: Do regenerate the cursor
-			LOG.info("Cursor {} has been closed.");
+			LOG.info("Cursor {} has been closed.", e);
 		} catch (IllegalStateException e) {
 			// .hasNext(): Cursor was closed by other THREAD (documentHandler
 			// cleaningup)?)
 			// Recoverable. Do regenerate the cursor.
-			LOG.info("Cursor being iterated was closed\n{}", e.toString());
+			LOG.info("Cursor being iterated was closed", e);
 		} catch (NotStartedException e) {
 			// Not recoverable: Do not regenerate the cursor.
 			throw e;
@@ -291,10 +287,15 @@ public class TailingTask implements Runnable {
 		}
 	}
 
+	/**
+	 * When a cursor was closed a delay can be set to wait for another cursor
+	 * construction
+	 */
 	private void applyDelayToGenerateCursor() {
 
 		if (cursorRegenerationDelay != 0) {
 			try {
+
 				TimeUnit.MILLISECONDS.sleep(cursorRegenerationDelay);
 			} catch (InterruptedException e) {
 				LOG.error("Thread was interrupted", e);
@@ -315,6 +316,7 @@ public class TailingTask implements Runnable {
 		return status;
 	}
 
+	@Override
 	public void start() {
 
 		// Prestart logic:
@@ -334,6 +336,7 @@ public class TailingTask implements Runnable {
 		status = ServiceStatus.STARTED;
 	}
 
+	@Override
 	public void stop() {
 		status = ServiceStatus.STOPPED;
 	}
