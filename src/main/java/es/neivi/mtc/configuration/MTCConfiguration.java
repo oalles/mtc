@@ -6,50 +6,41 @@ import com.mongodb.client.MongoDatabase;
 import es.neivi.mtc.exceptions.InvalidMTCConfiguration;
 
 /**
- * Represents a set of configuration values for a MongoESBEndpoint. Contains all
- * the data needed for exchange interaction.
+ * Contains all the data needed for exchange interaction.
  */
 public class MTCConfiguration {
 
 	/**
-	 * If the name of the database is not provided a database named
-	 * <code>eventsystemdb</code> will be created
+	 * A database connection with internal pooling.
 	 */
-	public static final String DEFAULT_EVENT_SYSTEM_DB_NAME = "eventsystemdb";
-
-	/**
-	 * Default name for the collection that stores all the events published in
-	 * the system whether one is not provided
-	 */
-	public static final String DEFAULT_EVENTS_COLLECTION_NAME = "events";
-
 	private MongoClient mongoClient;
 
 	/**
-	 * Holds the name provided for the database that this component is bound to.
-	 * This database stores the data needed to provided a working Mongo ESB.
-	 * 
-	 * At least there will be one collection in order to store all the events
-	 * being published.
-	 * 
-	 * Eventually, there will be a collection for persistent tracking purposes.
-	 * Allowing the consumer tasks to fetch the last event they processed.
+	 * Holds the name provided for the database containing the collection that
+	 * this component is bound to. Eventually, there will be a collection for
+	 * persistent tracking purposes. Allowing the consumer tasks to fetch the
+	 * last event they processed.
 	 */
 	private String database;
 
 	/**
-	 * Name provided for the collection that store all the events being
-	 * published by the systemm. This collections is a capped collection. s
+	 * Name provided for the collection that store all the documents that are
+	 * going to be tailable consumed. This collections IS a capped collection.
 	 */
 	private String collection;
 
 	/**
 	 * Eventually, contains the data needed in order to implement a persistent
-	 * tracking system. If this value is null, there is no tracking information
-	 * provided, meaning that persistent tracking is going to be disable.
+	 * tracking system. If this value is null, no tracking information is
+	 * provided, meaning that persistent tracking is going to be disable. It
+	 * tailing task is stop, when started again it will have no memory of the
+	 * last processed documents
 	 */
 	private MTCPersistentTrackingConfiguration persistentTrackingConfiguration;
 
+	/**
+	 * MongoDatabase instance associated to collection named as database.
+	 */
 	private MongoDatabase mongoDatabase;
 
 	public MongoClient getMongoClient() {
@@ -61,8 +52,6 @@ public class MTCConfiguration {
 	}
 
 	public String getDatabase() {
-		if (database == null)
-			return DEFAULT_EVENT_SYSTEM_DB_NAME;
 		return database;
 	}
 
@@ -71,8 +60,6 @@ public class MTCConfiguration {
 	}
 
 	public String getCollection() {
-		if (collection == null)
-			return DEFAULT_EVENTS_COLLECTION_NAME;
 		return collection;
 	}
 
@@ -98,14 +85,6 @@ public class MTCConfiguration {
 	public void setPersistentTrackingConfiguration(
 			MTCPersistentTrackingConfiguration persistentTrackingConfiguration) {
 		this.persistentTrackingConfiguration = persistentTrackingConfiguration;
-	}
-
-	public static String getDefaultEventSystemDbName() {
-		return DEFAULT_EVENT_SYSTEM_DB_NAME;
-	}
-
-	public static String getDefaultEventsCollectionName() {
-		return DEFAULT_EVENTS_COLLECTION_NAME;
 	}
 
 	public boolean isPersistentTrackingEnable() {

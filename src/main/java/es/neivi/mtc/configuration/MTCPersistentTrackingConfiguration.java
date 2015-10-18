@@ -2,7 +2,7 @@ package es.neivi.mtc.configuration;
 
 /**
  * Contains all the information related to enable a working persistent tracking
- * system, being able to allow a consmer task to remember the last event it
+ * system, being able to allow a consumer task to remember the last event it
  * processed.
  */
 public class MTCPersistentTrackingConfiguration {
