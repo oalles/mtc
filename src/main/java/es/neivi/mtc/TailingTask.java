@@ -277,7 +277,7 @@ public class TailingTask implements Runnable, Service {
 			// .hasNext(): Cursor was closed by other THREAD (documentHandler
 			// cleaningup)?)
 			// Recoverable. Do regenerate the cursor.
-			LOG.-info("Cursor being iterated was closed", e);
+			LOG.info("Cursor being iterated was closed", e);
 		} catch (NotStartedException e) {
 			// Not recoverable: Do not regenerate the cursor.
 			throw e;
