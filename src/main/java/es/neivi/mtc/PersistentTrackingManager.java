@@ -53,10 +53,10 @@ public class PersistentTrackingManager {
 			if (key.containsKey(MTCPersistentTrackingConfiguration.CONSUMER_ID_FIELD)) {
 				indexExist = true;
 				break;
-			}	
+			}
 			// LOG.debug("Index: {}", index);
 		}
-		
+
 		if (!indexExist) {
 
 			// Option 1: BUILD INDEX
@@ -92,6 +92,7 @@ public class PersistentTrackingManager {
 	 *             if the write failed due some other failure
 	 * @throws java.lang.IllegalArgumentException
 	 *             if a null argument was passed to the method
+	 * @param processedEventId
 	 */
 	public void persistLastTrackedEventId(final ObjectId processedEventId) {
 

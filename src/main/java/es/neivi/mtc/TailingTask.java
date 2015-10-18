@@ -116,6 +116,8 @@ public class TailingTask implements Runnable, Service {
 	/**
 	 * Builds a tailable & awaitdata cursor to fetch documents from the
 	 * documents collection.
+	 * 
+	 * @return
 	 */
 	public MongoCursor<Document> buildCursor() {
 
