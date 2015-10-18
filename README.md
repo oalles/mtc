@@ -15,5 +15,5 @@ Original idea from the  [camel-mongodb component](http://camel.apache.org/mongod
 	- Optionally, set with an MTCPersistentTrackingConfiguration instance. 
 
 ###Sample of Usage:
-see [Simple Message Broker](https://github.com/oalles/smb) 
+see [Simple Message Broadcaster](https://github.com/oalles/smb) 
  
