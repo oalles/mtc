@@ -10,10 +10,10 @@ Original idea from the  [camel-mongodb component](http://camel.apache.org/mongod
 ###Configuration
 1. A `DocumentHandler` implementation to manage each document being consumed from the database.
 2. A MTCConfiguration object with:
-	- A [MongoCLient](http://api.mongodb.org/java/3.0/com/mongodb/MongoClient.html) instance to provide connection to MongoDb . 
+	- A [MongoClient](http://api.mongodb.org/java/3.0/com/mongodb/MongoClient.html) instance to provide connection to MongoDb . 
 	- A database and a collection name. 
 	- Optionally, set with an MTCPersistentTrackingConfiguration instance. 
 
-# Usage:
+###Sample of Usage:
 see [Simple Message Broker](https://github.com/oalles/smb) 
  
