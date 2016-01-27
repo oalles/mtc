@@ -19,7 +19,7 @@
 		<maven-eclipse-plugin>2.9</maven-eclipse-plugin>
 		<maven-resources-plugin>2.6</maven-resources-plugin>
 		<maven-compiler-plugin>2.5.1</maven-compiler-plugin>
-		<mongo-java-driver.version>3.0.4</mongo-java-driver.version>
+		<mongo-java-driver.version>3.2.1</mongo-java-driver.version>
 	</properties>
 	<repositories>
 		<repository>
