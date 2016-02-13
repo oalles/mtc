@@ -1,4 +1,4 @@
-package es.neivi.mtc.exceptions;
+package es.omarall.mtc.exceptions;
 
 /**
  * The configuration provided for the MTC component is INVALID.

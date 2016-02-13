@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>es.neivi</groupId>
+	<groupId>es.omarall</groupId>
 	<artifactId>mtc</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 
-	<name>es.neivi.mtc</name>
+	<name>Mongo Tailable Consumer</name>
 	<properties>
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -174,4 +174,9 @@
 		</plugins>
 	</build>
 	<url>https://github.com/oalles/mtc</url>
+	<description>MTC is task to be configured in order to consume documents from a tailable collection in a mongo database. It optionally allows to persist the id the last processed document in the collection so the task can be safely restarted.</description>
+	<organization>
+		<name>Omar Alles</name>
+		<url>https://omarall.es</url>
+	</organization>
 </project>

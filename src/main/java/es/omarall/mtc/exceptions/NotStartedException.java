@@ -1,4 +1,4 @@
-package es.neivi.mtc.exceptions;
+package es.omarall.mtc.exceptions;
 
 /**
  * Signs the MongoESBConsumer changed its state to not started, so it is not
